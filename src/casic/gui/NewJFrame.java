@@ -8,6 +8,7 @@ package casic.gui;
 import com.fazecast.jSerialComm.SerialPort;
 import java.io.File;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 
 /**
  *
@@ -57,7 +58,6 @@ public class NewJFrame extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setIconImages(null);
         setResizable(false);
 
         jLabel1.setText("CASIC");
@@ -230,6 +230,8 @@ public class NewJFrame extends javax.swing.JFrame {
         playFile = jFileChooser.getSelectedFile();
         String fileName = playFile.getName();
         jTextField1.setText(fileName);
+       
+        
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
@@ -250,6 +252,8 @@ public class NewJFrame extends javax.swing.JFrame {
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         // TODO add your handling code here:
+        while(true)
+        {}
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
