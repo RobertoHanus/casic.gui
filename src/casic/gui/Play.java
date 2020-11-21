@@ -23,6 +23,7 @@ public class Play extends Thread {
     private boolean alive = true;
     private SerialPort serialPort;
     private String filePath;
+    private boolean pause = false;
 
     public Play(SerialPort serialPort, String filePath) {
         this.serialPort = serialPort;
@@ -36,6 +37,21 @@ public class Play extends Thread {
     public void kill()
     {
         alive=false;
+    }
+    
+    public void pause()
+    {
+        pause = true;
+    }  
+    
+    public void ahead()
+    {
+        pause = false;
+    }
+    
+    public boolean isPaused()
+    {
+        return pause;
     }
 
     @Override
@@ -61,7 +77,13 @@ public class Play extends Thread {
                 // System.out.println("Chunk Type: " + chunk.toString() + " Chunk " + i + " of " + length);
                 progress = (int)((((float)i)/((float)length))*100);
                 if (chunk.toString().equals("data")) {
-                    Thread.sleep(chunk.getAux());
+                    for(int j=0;j<chunk.getAux();j+=10)
+                    {
+                        Thread.sleep(10);
+                        while(pause) { 
+                            Thread.sleep(1);
+                        };
+                    }
                     serialPort.writeBytes(chunk.getData(), chunk.getLength());
                     Thread.sleep((int) (chunk.getLength() * 16.666));
                 }
