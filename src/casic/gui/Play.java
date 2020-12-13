@@ -39,6 +39,11 @@ public class Play extends Thread {
         alive=false;
     }
     
+    public boolean isEnd()
+    {
+        return !alive;
+    }
+    
     public void pause()
     {
         pause = true;
@@ -89,6 +94,9 @@ public class Play extends Thread {
                 }
                 i++;
             }
+            inputStream.close();
+            serialPort.closePort();
+            alive = false;  
         } catch (IOException ex) {
             Logger.getLogger(Play.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {

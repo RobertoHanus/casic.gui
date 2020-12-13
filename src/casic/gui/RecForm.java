@@ -36,18 +36,22 @@ public class RecForm extends javax.swing.JFrame {
         this.serialPort = serialPort;
 
         jLabel2.setText(recFile.getName());
-        
-        
-        this.rec = new Rec(serialPort,recFile.getAbsolutePath());
+
+        this.rec = new Rec(serialPort, recFile.getAbsolutePath());
         rec.start();
-        
+
         Timer timer = new Timer(1000, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 jProgressBar1.setValue(rec.getProgress());
+                if (rec.isEnd()) {
+                    rec.kill();
+                    dispose();
+                }
             }
         });
-        
-        timer.start();  }
+
+        timer.start();
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -152,9 +156,6 @@ public class RecForm extends javax.swing.JFrame {
             }
         });
 
-        
-
-        
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

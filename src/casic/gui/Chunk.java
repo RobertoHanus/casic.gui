@@ -89,7 +89,12 @@ public class Chunk {
 
     public void setData(byte[] data) {
         if (data != null) {
-            this.data = data.clone();
+            byte[] buffer = new byte[getLength()];
+            for(int i=0; i<getLength();i++)
+            {
+                buffer[i]=data[i];
+            }
+            this.data=buffer;
         }
     }
 

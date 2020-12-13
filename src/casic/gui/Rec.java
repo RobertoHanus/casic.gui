@@ -40,6 +40,10 @@ public class Rec extends Thread {
         alive = false;
     }
 
+    public boolean isEnd() {
+        return !alive;
+    }
+
     @Override
     public void run() {
         serialPort.openPort();
@@ -60,37 +64,93 @@ public class Rec extends Thread {
         chunk.setAux(600);
         chunkList.add(chunk);
 
-        while (alive) {
-            progress++;
-            chunk = new Chunk();
-            chunk.setType("data");
-            chunk.setLength(132);
-            long start = System.currentTimeMillis();
-            while (serialPort.bytesAvailable() == 0);
-            short elapsed = (short) (System.currentTimeMillis() - start);
-            chunk.setAux(elapsed);
-            while (serialPort.bytesAvailable() < chunk.getLength());
-            byte[] buffer = new byte[chunk.getLength()];
-            serialPort.readBytes(buffer, chunk.getLength());
-            chunk.setData(buffer);
-            chunkList.add(chunk);
-            // System.out.println(String.format("0x%01X", chunk.getData()[2]));
-            if (chunk.getData()[2] == (byte) 0xFE) {
-                break;
+        short elapsedInterByte = 0;
+        short elapsedIRG = 0;
+        boolean endOfFile = false;
+        while (elapsedIRG < 30000) {
+            while (true) {
+                chunk = new Chunk();
+                chunk.setType("data");
+                // chunk.setLength(132);
+                long startIRG = System.currentTimeMillis();
+
+                elapsedIRG = 0;
+                while (serialPort.bytesAvailable() == 0) {
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Rec.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    elapsedIRG = (short) (System.currentTimeMillis() - startIRG);
+                    if (elapsedIRG > 30000) {
+                        endOfFile = true;
+                        break;
+                    }
+                };
+                if (endOfFile) {
+                    break;
+                }
+
+                chunk.setAux(elapsedIRG + elapsedInterByte);
+                // while (commPort.bytesAvailable() < chunk.getLength());
+
+                byte[] buffer = new byte[1000];
+                // commPort.readBytes(buffer, chunk.getLength());
+
+                int j;
+                for (j = 0; j < 1000; j++) {
+                    byte[] single = new byte[1];
+                    serialPort.readBytes(single, 1);
+                    buffer[j] = single[0];
+                    long startInterByte = System.currentTimeMillis();
+                    elapsedInterByte = 0;
+                    while (serialPort.bytesAvailable() == 0) {
+                        try {
+                            Thread.sleep(1);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(Rec.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        elapsedInterByte = (short) (System.currentTimeMillis() - startInterByte);
+                        if (elapsedInterByte > 5000) {
+                            break;
+                        }
+                    }
+                    if (elapsedInterByte > 16.666 * 5) {
+                        break;
+                    }
+                }
+
+                chunk.setLength(j + 1);
+                // commPort.readBytes(buffer, chunk.getLength());
+                chunk.setData(buffer);
+                chunkList.add(chunk);
+                // System.out.println(String.format("0x%01X", chunk.getData()[2]));
+                progress++;
+                // if (chunk.getData()[2] == (byte) 0xFE) {
+                if (elapsedInterByte > 5000) {
+                    break;
+                }
             }
         }
-        OutputStream outputStream=null;
+
+        OutputStream outputStream;
         try {
             outputStream = new FileOutputStream(filePath);
+            for (Chunk chunk_ : chunkList.list()) {
+                try {
+                    outputStream.write(chunk_.array());
+                } catch (IOException ex) {
+                    Logger.getLogger(Rec.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            outputStream.close();
+            serialPort.closePort();
+            alive = false;
         } catch (FileNotFoundException ex) {
             Logger.getLogger(Rec.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Rec.class.getName()).log(Level.SEVERE, null, ex);
         }
-        for (Chunk chunk_ : chunkList.list()) {
-            try {
-                outputStream.write(chunk_.array());
-            } catch (IOException ex) {
-                Logger.getLogger(Rec.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+
     }
 }
